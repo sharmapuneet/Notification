@@ -1,0 +1,570 @@
+<?php
+/*
+ * Implements hook_node_update().
+ */
+function goarn_notify_node_update($node){
+  $options = array('absolute' => TRUE);
+  $nodes = goarn_notify_get_referenced_nodes($node);
+  $terms = goarn_notify_get_referenced_terms($node);
+  $users_node = goarn_notify_get_referenced_users_node($node);
+  $users_term = goarn_notify_get_referenced_users_term($node);
+  $user_updated = goarn_notify_get_users_node_edited($node);
+  $node_user = goarn_notify_get_users_node($node);
+  foreach($user_updated as $user_id){
+    $user_edited = user_load($user_id);
+    $username = $user_edited->name;
+  }
+  $node = node_load($node->nid);
+  $type = $node->type;
+  foreach ($node_user as $userid) {
+    $user = user_load($userid);
+    $name = $user->name;
+    $name = ucfirst($name); 
+    if($type == 'operation'){
+      $node_link = 'ngadappt/operations/' . $node->nid;
+      $link = l($node->title, $node_link, $options);
+      $link_node = (array(
+       'value' => $link,
+       'format' => 'full_html',
+       ));
+    }
+    elseif($type == 'event'){
+      $node_link = 'ngadappt/events/' . $node->nid;
+      $link = l($node->title, $node_link, $options);  
+      $link_node = (array(
+       'value' => $link,
+       'format' => 'full_html',
+       ));
+    }
+    elseif($type == 'institution'){
+      $node_link = 'ngadappt/institutions/' . $node->nid;
+      $link = l($node->title, $node_link, $options); 
+      $link_node = (array(
+       'value' => $link,
+       'format' => 'full_html',
+       ));
+    }
+    elseif($type == 'meeting_space'){
+      $node_link = 'ngadappt/meetings/' . $node->nid;
+      $link = l($node->title, $node_link, $options);
+      $link_node = (array(
+       'value' => $link,
+       'format' => 'full_html',
+       ));
+    }
+    elseif($type == 'steering_committee'){
+      $node_link = 'ngadappt/scom/' . $node->nid;
+      $link = l($node->title, $node_link, $options);
+      $link_node = (array(
+       'value' => $link,
+       'format' => 'full_html',
+       ));
+    }
+    $message_body['value'] = t('<div style="margin:10px;">Hi @recipient</div>
+
+      <div>We wanted to share that the following post on GOARN has been updated by @user.You can see the post by clicking on the link below.</div>
+
+      ', array('@user' => $username, '@recipient' => $name));
+    $message_body['format'] = 'filtered';
+    $message_body['value'] .= $link;
+    $message_body['value'] .= t('
+
+      <p>Thanks & Regards</p>
+      <p>GOARN-Team</p>');
+    $message = message_create('node_update', array('uid' => $user->uid));
+    $wrapper = entity_metadata_wrapper('message', $message);
+    $wrapper->field_subject->set($node->title . ' has an update');
+    $wrapper->field_description->set($message_body);
+    $wrapper->field_parent->set($node->nid);
+    $wrapper->save();
+    message_notify_send_message($message);
+
+
+  }
+    // For users who are subscribed to nodes
+  foreach ($users_node as $userid) {
+    $user = user_load($userid);
+    $name = $user->name;
+    $name = ucfirst($name);
+    foreach ($nodes as $nodeid) {
+      $flag_node = flag_get_entity_flags('node', $nodeid, 'subscribe_node');
+
+      $node_title = '';
+      $term_title = '';
+      $node_ref = node_load($nodeid);
+      $term_ref = taxonomy_term_load($nodeid);
+      $vocab = taxonomy_vocabulary_load($term_ref->vid);
+      $machine_name = $vocab->machine_name;
+      if(!empty($node_ref) && ($node_ref->type) == 'operation'){
+        $node_link = 'ngadappt/operations/' . $node_ref->nid;
+        $link = l($node->title, $node_link, $options);
+        $description = (array(
+         'value' => $link,
+         'format' => 'full_html',
+         ));
+        $node_title = $node_ref->title;
+      }
+      elseif(!empty($node_ref) && ($node_ref->type) == 'event'){
+        $node_link = 'ngadappt/events/' . $node_ref->nid;
+        $link = l($node->title, $node_link, $options);  
+        $description = (array(
+         'value' => $link,
+         'format' => 'full_html',
+         ));
+        $node_title = $node_ref->title;
+      }
+      elseif(!empty($node_ref) && ($node_ref->type) == 'institution'){
+        $node_link = 'ngadappt/institutions/' . $node_ref->nid;
+        $link = l($node->title, $node_link, $options); 
+        $description = (array(
+         'value' => $link,
+         'format' => 'full_html',
+         ));
+        $node_title = $node_ref->title;
+      }
+      elseif(!empty($node_ref) && ($node_ref->type) == 'meeting_space'){
+        $node_link = 'ngadappt/meetings/' . $node_ref->nid;
+        $link = l($node->title, $node_link, $options);
+        $description = (array(
+         'value' => $link,
+         'format' => 'full_html',
+         ));
+        $node_title = $node_ref->title;
+      }
+      elseif(!empty($node_ref) && ($node_ref->type) == 'steering_committee'){
+        $node_link = 'ngadappt/scom/' . $node_ref->nid;
+        $link = l($node->title, $node_link, $options);
+        $description = (array(
+         'value' => $link,
+         'format' => 'full_html',
+         ));
+        $node_title = $node_ref->title;
+      }
+
+
+      if($flag_node && $type != 'news_item'){
+       $message_body['value'] = t('<div style="margin:10px;">Hi @recipient</div>
+
+        <div>We wanted to share that the following post on GOARN has been updated by @user.You can see the post by clicking on the link below.</div>
+
+        ', array('@user' => $username, '@recipient' => $name));
+       $message_body['format'] = 'filtered';
+       $message_body['value'] .= $link;
+       $message_body['value'] .= t('
+
+        <p>Thanks & Regards</p>
+        <p>GOARN-Team</p>');
+       $message = message_create('node_update', array('uid' => $user->uid));
+       $wrapper = entity_metadata_wrapper('message', $message);
+       $wrapper->field_subject->set($node_title . ' has  an update');
+       $wrapper->field_description->set($message_body); 
+       $wrapper->field_parent->set($node->nid);
+       $wrapper->save();
+       message_notify_send_message($message);
+     }
+   }
+ }
+  // For users who are subscribed to terms
+ foreach ($users_term as $userid) {
+  $user = user_load($userid);
+  $name = $user->name;
+  $name = ucfirst($name);
+  foreach ($terms as $nodeid) {
+    $flag_term = flag_get_entity_flags('taxonomy_term', $nodeid, 'subscribe_term');
+    $node_title = '';
+    $term_title = '';
+    $node_ref = node_load($nodeid);
+    $term_ref = taxonomy_term_load($nodeid);
+    $vocab = taxonomy_vocabulary_load($term_ref->vid);
+    $machine_name = $vocab->machine_name;
+    
+    if(!empty($term_ref) && $machine_name == 'ems_vocabulary_disease'){
+      $term_link = 'ngadappt/disease/' . $term_ref->tid;
+      $link = l($node->title, $term_link, $options);
+      $description = (array(
+       'value' => $link,
+       'format' => 'full_html',
+       ));
+      $term_title = $term_ref->name;
+    }
+    elseif(!empty($term_ref) && $machine_name == 'ems_vocabulary_country'){
+      $term_link = 'ngadappt/country/' . $term_ref->tid;
+      $link = l($node->title, $term_link, $options);
+      $description = (array(
+       'value' => $link,
+       'format' => 'full_html',
+       ));
+      $term_title = $term_ref->name;
+    }
+    if($flag_term && $type != 'news_item'){
+     $message_body['value'] = t('<div style="margin:10px;">Hi @recipient</div>
+
+      <div>We wanted to share that the following post on GOARN has been updated by @user.You can see the post by clicking on the link below.</div>
+
+      ', array('@user' => $username, '@recipient' => $name));
+     $message_body['format'] = 'filtered';
+     $message_body['value'] .= $link;
+     $message_body['value'] .= t('
+
+      <p>Thanks & Regards</p>
+      <p>GOARN-Team</p>');
+     $message = message_create('node_update', array('uid' => $user->uid));
+     $wrapper = entity_metadata_wrapper('message', $message);
+     $wrapper->field_subject->set($term_title . ' has  an update');
+     $wrapper->field_description->set($message_body); 
+     $wrapper->field_parent->set($node->nid);
+     $wrapper->save();
+     message_notify_send_message($message);
+   }
+ }
+}
+}
+
+/*
+ * Implements hook_node_insert().
+ */
+function goarn_notify_node_insert($node)
+{
+  $node = node_load($node->nid);
+  $type = $node->type;
+  $user_id = $node->uid;
+  $user_created = user_load($user_id);
+  $username = $user_created->name;
+  $top = array();
+  $top_term = array();
+  $field_infos = field_info_instances('node', $node->type);
+  foreach ($field_infos as $field_name => $value) {
+    $field = field_info_field($field_name);
+    if (($field['type'] == 'entityreference') && $field['field_name'] !== 'og_group_ref' && $field['settings']['target_type'] == 'node') {
+      if ($field_value = field_get_items('node', $node, $field['field_name'])) {
+       $top_nid = $field_value[0]['target_id'];
+       $top[] = $top_nid;
+     }
+   }
+   if (($field['type'] == 'entityreference') && $field['field_name'] !== 'og_group_ref' && $field['settings']['target_type'] == 'taxonomy_term') {
+    if ($field_value = field_get_items('node', $node, $field['field_name'])) {
+      $top_tid = $field_value[0]['target_id'];
+      $top_term[] = $top_tid;
+    }
+  }
+}
+
+$results = array();
+foreach ($top as $value) {
+  $flag_node = flag_get_entity_flags('node', $value, 'subscribe_node');
+  
+  if($flag_node){
+    $query = db_select('flagging', 'f');
+    $query->fields('f', array('uid'));
+    $query->condition('f.entity_id', $value, '=');
+    $query->condition('f.entity_type', 'node', '=');
+    $result = $query->distinct()->execute();
+  }
+}
+
+if(!empty($result)){
+  foreach ($result as $u) {
+    $results[] = $u->uid;
+  }
+}
+
+$users = array();
+
+foreach ($top_term as $values) {
+  $flag_term = flag_get_entity_flags('taxonomy_term', $values, 'subscribe_term');
+  if($flag_term){
+    $query = db_select('flagging', 'f');
+    $query->fields('f', array('uid'));
+    $query->condition('f.entity_id', $values, '=');
+    $query->condition('f.entity_type', 'taxonomy_term', '=');
+    $user = $query->distinct()->execute();
+  }
+}
+if(!empty($user)){
+  foreach($user as $userterm) {
+    $users[] = $userterm->uid;
+  }
+}
+
+$options = array('absolute' => TRUE);
+  // For users who are subscribed to nodes
+foreach ($results as $userid) {
+  $user = user_load($userid);
+  $name = $user->name;
+  $name = ucfirst($name);
+  foreach ($top as $nodeid) {
+    $node_title = '';
+    $term_title = '';
+    $node_ref = node_load($nodeid);
+    if(!empty($node_ref) && ($node_ref->type) == 'operation'){
+      $node_link = 'ngadappt/operations/' . $node_ref->nid;
+      $link = l($node->title, $node_link, $options);
+      $description = (array(
+       'value' => $link,
+       'format' => 'full_html',
+       ));
+      $node_title = $node_ref->title;
+    }
+    elseif(!empty($node_ref) && ($node_ref->type) == 'event'){
+      $node_link = 'ngadappt/events/' . $node_ref->nid;
+      $link = l($node->title, $node_link, $options);  
+      $description = (array(
+       'value' => $link,
+       'format' => 'full_html',
+       ));
+      $node_title = $node_ref->title;
+    }
+    elseif(!empty($node_ref) && ($node_ref->type) == 'institution'){
+      $node_link = 'ngadappt/institutions/' . $node_ref->nid;
+      $link = l($node->title, $node_link, $options); 
+      $description = (array(
+       'value' => $link,
+       'format' => 'full_html',
+       ));
+      $node_title = $node_ref->title;
+    }
+    elseif(!empty($node_ref) && ($node_ref->type) == 'meeting_space'){
+      $node_link = 'ngadappt/meetings/' . $node_ref->nid;
+      $link = l($node->title, $node_link, $options);
+      $description = (array(
+       'value' => $link,
+       'format' => 'full_html',
+       ));
+      $node_title = $node_ref->title;
+    }
+    elseif(!empty($node_ref) && ($node_ref->type) == 'steering_committee'){
+      $node_link = 'ngadappt/scom/' . $node_ref->nid;
+      $link = l($node->title, $node_link, $options);
+      $description = (array(
+       'value' => $link,
+       'format' => 'full_html',
+       ));
+      $node_title = $node_ref->title;
+    }
+    $flag_node = flag_get_entity_flags('node', $nodeid, 'subscribe_node');
+    if($flag_node && $type != 'news_item'){
+      $message_body['value'] = t('<div style="margin:10px;">Hi @recipient</div>
+
+        <div>We wanted to share that the following post on GOARN has been created by @user.You can see the post by clicking on the link below.</div>
+
+        ', array('@user' => $username, '@recipient' => $name));
+      $message_body['format'] = 'filtered';
+      $message_body['value'] .= $link;
+      $message_body['value'] .= t('
+
+        <p>Thanks & Regards</p>
+        <p>GOARN-Team</p>');
+      $message = message_create('node_update', array('uid' => $user->uid));
+      $wrapper = entity_metadata_wrapper('message', $message);
+      $wrapper->field_subject->set($node_title . ' has an update');
+      $wrapper->field_description->set($message_body);
+      $wrapper->field_parent->set($node->nid);  
+      $wrapper->save();
+      message_notify_send_message($message);
+    }
+  }
+}
+  // For users who are subscribed to terms
+foreach ($users as $userid) {
+  $user = user_load($userid);
+  $name = $user->name;
+  $name = ucfirst($name);
+  foreach ($top_term as $nodeid) {
+    $term_title = '';
+    $term_ref = taxonomy_term_load($nodeid);
+    $vocab = taxonomy_vocabulary_load($term_ref->vid);
+    $machine_name = $vocab->machine_name;
+    
+    if(!empty($term_ref) && $machine_name == 'ems_vocabulary_disease'){
+      $term_link = 'ngadappt/disease/' . $term_ref->tid;
+      $link = l($node->title, $term_link, $options);
+      $description = (array(
+       'value' => $link,
+       'format' => 'full_html',
+       ));
+      $term_title = $term_ref->name;
+    }
+    elseif(!empty($term_ref) && $machine_name == 'ems_vocabulary_country'){
+      $term_link = 'ngadappt/country/' . $term_ref->tid;
+      $link = l($node->title, $term_link, $options);
+      $description = (array(
+       'value' => $link,
+       'format' => 'full_html',
+       ));
+      $term_title = $term_ref->name;
+    }
+    $flag_term = flag_get_entity_flags('taxonomy_term', $nodeid, 'subscribe_term');
+    if($flag_term && $type != 'news_item'){
+      $message_body['value'] = t('<div style="margin:10px;">Hi @recipient</div>
+
+        <div>We wanted to share that the following post on GOARN has been created by @user.You can see the post by clicking on the link below.</div>
+
+        ', array('@user' => $username, '@recipient' => $name));
+      $message_body['format'] = 'filtered';
+      $message_body['value'] .= $link;
+      $message_body['value'] .= t('
+
+        <p>Thanks & Regards</p>
+        <p>GOARN-Team</p>');
+      $message = message_create('node_update', array('uid' => $user->uid));
+      $wrapper = entity_metadata_wrapper('message', $message);
+      $wrapper->field_subject->set($term_title . ' has an update');
+      $wrapper->field_description->set($message_body);
+      $wrapper->field_parent->set($node->nid);  
+      $wrapper->save();
+      message_notify_send_message($message);
+    }
+  }
+}
+}
+
+/*
+ * function to get referenced entities from the updated and inserted node.
+ */
+function goarn_notify_get_referenced_nodes($node)
+{
+  $top = array();
+  $field_infos = field_info_instances('node', $node->type);
+  foreach ($field_infos as $field_name => $value) {
+    $field = field_info_field($field_name);
+    if (($field['type'] == 'entityreference') && $field['field_name'] !== 'og_group_ref' && $field['settings']['target_type'] == 'node') {
+      if ($field_value = field_get_items('node', $node, $field['field_name'])) {
+       $top_nid = $field_value[0]['target_id'];
+       $top[] = $top_nid;
+     }
+   }
+ }
+ return $top;
+}
+
+function goarn_notify_get_referenced_terms($node)
+{
+  $top_term = array();
+  $field_infos = field_info_instances('node', $node->type);
+  foreach ($field_infos as $field_name => $value) {
+    $field = field_info_field($field_name);
+    if (($field['type'] == 'entityreference') && $field['field_name'] !== 'og_group_ref' && $field['settings']['target_type'] == 'taxonomy_term') {
+      if ($field_value = field_get_items('node', $node, $field['field_name'])) {
+       $top_tid = $field_value[0]['target_id'];
+       $top_term[] = $top_tid;
+     }
+   }
+ }
+ return $top_term;
+}
+
+/*
+ * function to get uid of user who subscribed the referenced nodes.
+ */
+function goarn_notify_get_referenced_users_node($node)
+{
+  $results = array();
+  $result = array();
+  $nodes = goarn_notify_get_referenced_nodes($node);
+  foreach ($nodes as $value) {
+    $flag_node = flag_get_entity_flags('node', $value, 'subscribe_node');
+    
+    if($flag_node){
+      $query = db_select('flagging', 'f');
+      $query->fields('f', array('uid'));
+      $query->condition('f.entity_id', $value, '=');
+      $query->condition('f.entity_type', 'node', '=');
+      $result = $query->distinct()->execute(); 
+    }
+    
+  }
+  if(!empty($result)){
+    foreach ($result as $u) {
+      $results[] = $u->uid;
+    }
+  }
+  return $results;
+}
+
+/*
+ * function to get uid of user who subscribed the referenced terms.
+ */
+function goarn_notify_get_referenced_users_term($node)
+{
+  $users = array();
+  $user = array();
+  $terms = goarn_notify_get_referenced_terms($node);
+  foreach ($terms as $value) {
+    $flag_term = flag_get_entity_flags('taxonomy_term', $value, 'subscribe_term');
+
+    if($flag_term){
+      $query = db_select('flagging', 'f');
+      $query->fields('f', array('uid'));
+      $query->condition('f.entity_id', $value, '=');
+      $query->condition('f.entity_type', 'taxonomy_term', '=');
+      $user = $query->distinct()->execute();
+    }
+  }
+  if(!empty($user)){
+    foreach ($user as $u) {
+      $users[] = $u->uid;
+    }
+  }
+  return $users;
+}
+
+/*
+ * function to get uid of user who subscribed the nodes which are updated and inserted.
+ */
+
+function goarn_notify_get_users_node($node)
+{
+  $results = array();
+  $result = array();
+  $node = node_load($node->nid);
+  $node_id = $node->nid;
+  $query = db_select('flagging', 'f');
+  $query->fields('f', array('uid'));
+  $db_or = db_or();
+  $db_or->condition('f.entity_id', $node_id, '=');
+  $query->condition($db_or);
+  $result = $query->distinct()->execute();
+  
+  foreach ($result as $u) {
+    $results[] = $u->uid;
+  }
+  return $results;
+}
+
+/*
+ * function to get uid of user who subscribed the terms which are updated and inserted.
+ */
+
+function goarn_notify_get_users_term($term)
+{
+  $results = array();
+  $result = array();
+  $node = taxonomy_term_load($term->tid);
+  $term_id = $term->tid;
+  $query = db_select('flagging', 'f');
+  $query->fields('f', array('uid'));
+  $db_or = db_or();
+  $db_or->condition('f.entity_id', $term_id, '=');
+  $query->condition($db_or);
+  $result = $query->distinct()->execute();
+  
+  foreach ($result as $u) {
+    $results[] = $u->uid;
+  }
+  return $results;
+}
+
+function goarn_notify_get_users_node_edited($node){
+  $node = node_load($node->nid);
+  $results = array();
+  $nodeid = $node->nid;
+  $query = db_select('node_revision', 'nr');
+  $query->fields('nr', array('uid'));
+  $query->condition('nr.nid', $nodeid, '=');
+  $result = $query->execute();
+  foreach($result as $value){
+    $results[] = $value->uid;
+  }
+  return $results;
+}
+  
