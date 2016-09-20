@@ -26,7 +26,7 @@ function goarn_notify_node_update($node){
       $link_node = (array(
        'value' => $link,
        'format' => 'full_html',
-       ));
+      ));
     }
     elseif($type == 'event'){
       $node_link = 'ngadappt/events/' . $node->nid;
@@ -34,7 +34,7 @@ function goarn_notify_node_update($node){
       $link_node = (array(
        'value' => $link,
        'format' => 'full_html',
-       ));
+      ));
     }
     elseif($type == 'institution'){
       $node_link = 'ngadappt/institutions/' . $node->nid;
@@ -42,7 +42,7 @@ function goarn_notify_node_update($node){
       $link_node = (array(
        'value' => $link,
        'format' => 'full_html',
-       ));
+      ));
     }
     elseif($type == 'meeting_space'){
       $node_link = 'ngadappt/meetings/' . $node->nid;
@@ -50,7 +50,7 @@ function goarn_notify_node_update($node){
       $link_node = (array(
        'value' => $link,
        'format' => 'full_html',
-       ));
+      ));
     }
     elseif($type == 'steering_committee'){
       $node_link = 'ngadappt/scom/' . $node->nid;
@@ -58,17 +58,14 @@ function goarn_notify_node_update($node){
       $link_node = (array(
        'value' => $link,
        'format' => 'full_html',
-       ));
+      ));
     }
     $message_body['value'] = t('<div style="margin:10px;">Hi @recipient</div>
-
       <div>We wanted to share that the following post on GOARN has been updated by @user.You can see the post by clicking on the link below.</div>
-
       ', array('@user' => $username, '@recipient' => $name));
     $message_body['format'] = 'filtered';
     $message_body['value'] .= $link;
     $message_body['value'] .= t('
-
       <p>Thanks & Regards</p>
       <p>GOARN-Team</p>');
     $message = message_create('node_update', array('uid' => $user->uid));
@@ -78,17 +75,14 @@ function goarn_notify_node_update($node){
     $wrapper->field_parent->set($node->nid);
     $wrapper->save();
     message_notify_send_message($message);
-
-
   }
-    // For users who are subscribed to nodes
+// For users who are subscribed to nodes
   foreach ($users_node as $userid) {
     $user = user_load($userid);
     $name = $user->name;
     $name = ucfirst($name);
     foreach ($nodes as $nodeid) {
       $flag_node = flag_get_entity_flags('node', $nodeid, 'subscribe_node');
-
       $node_title = '';
       $term_title = '';
       $node_ref = node_load($nodeid);
@@ -101,7 +95,7 @@ function goarn_notify_node_update($node){
         $description = (array(
          'value' => $link,
          'format' => 'full_html',
-         ));
+        ));
         $node_title = $node_ref->title;
       }
       elseif(!empty($node_ref) && ($node_ref->type) == 'event'){
@@ -110,7 +104,7 @@ function goarn_notify_node_update($node){
         $description = (array(
          'value' => $link,
          'format' => 'full_html',
-         ));
+        ));
         $node_title = $node_ref->title;
       }
       elseif(!empty($node_ref) && ($node_ref->type) == 'institution'){
@@ -119,7 +113,7 @@ function goarn_notify_node_update($node){
         $description = (array(
          'value' => $link,
          'format' => 'full_html',
-         ));
+        ));
         $node_title = $node_ref->title;
       }
       elseif(!empty($node_ref) && ($node_ref->type) == 'meeting_space'){
@@ -128,7 +122,7 @@ function goarn_notify_node_update($node){
         $description = (array(
          'value' => $link,
          'format' => 'full_html',
-         ));
+        ));
         $node_title = $node_ref->title;
       }
       elseif(!empty($node_ref) && ($node_ref->type) == 'steering_committee'){
@@ -137,21 +131,18 @@ function goarn_notify_node_update($node){
         $description = (array(
          'value' => $link,
          'format' => 'full_html',
-         ));
+        ));
         $node_title = $node_ref->title;
       }
 
 
       if($flag_node && $type != 'news_item'){
        $message_body['value'] = t('<div style="margin:10px;">Hi @recipient</div>
-
         <div>We wanted to share that the following post on GOARN has been updated by @user.You can see the post by clicking on the link below.</div>
-
         ', array('@user' => $username, '@recipient' => $name));
        $message_body['format'] = 'filtered';
        $message_body['value'] .= $link;
        $message_body['value'] .= t('
-
         <p>Thanks & Regards</p>
         <p>GOARN-Team</p>');
        $message = message_create('node_update', array('uid' => $user->uid));
@@ -164,7 +155,7 @@ function goarn_notify_node_update($node){
      }
    }
  }
-  // For users who are subscribed to terms
+// For users who are subscribed to terms
  foreach ($users_term as $userid) {
   $user = user_load($userid);
   $name = $user->name;
@@ -184,7 +175,7 @@ function goarn_notify_node_update($node){
       $description = (array(
        'value' => $link,
        'format' => 'full_html',
-       ));
+      ));
       $term_title = $term_ref->name;
     }
     elseif(!empty($term_ref) && $machine_name == 'ems_vocabulary_country'){
@@ -193,19 +184,16 @@ function goarn_notify_node_update($node){
       $description = (array(
        'value' => $link,
        'format' => 'full_html',
-       ));
+      ));
       $term_title = $term_ref->name;
     }
     if($flag_term && $type != 'news_item'){
      $message_body['value'] = t('<div style="margin:10px;">Hi @recipient</div>
-
       <div>We wanted to share that the following post on GOARN has been updated by @user.You can see the post by clicking on the link below.</div>
-
       ', array('@user' => $username, '@recipient' => $name));
      $message_body['format'] = 'filtered';
      $message_body['value'] .= $link;
      $message_body['value'] .= t('
-
       <p>Thanks & Regards</p>
       <p>GOARN-Team</p>');
      $message = message_create('node_update', array('uid' => $user->uid));
@@ -223,8 +211,7 @@ function goarn_notify_node_update($node){
 /*
  * Implements hook_node_insert().
  */
-function goarn_notify_node_insert($node)
-{
+function goarn_notify_node_insert($node){
   $node = node_load($node->nid);
   $type = $node->type;
   $user_id = $node->uid;
@@ -237,17 +224,17 @@ function goarn_notify_node_insert($node)
     $field = field_info_field($field_name);
     if (($field['type'] == 'entityreference') && $field['field_name'] !== 'og_group_ref' && $field['settings']['target_type'] == 'node') {
       if ($field_value = field_get_items('node', $node, $field['field_name'])) {
-       $top_nid = $field_value[0]['target_id'];
-       $top[] = $top_nid;
-     }
-   }
-   if (($field['type'] == 'entityreference') && $field['field_name'] !== 'og_group_ref' && $field['settings']['target_type'] == 'taxonomy_term') {
-    if ($field_value = field_get_items('node', $node, $field['field_name'])) {
-      $top_tid = $field_value[0]['target_id'];
-      $top_term[] = $top_tid;
+        $top_nid = $field_value[0]['target_id'];
+        $top[] = $top_nid;
+      }
+    }
+    if (($field['type'] == 'entityreference') && $field['field_name'] !== 'og_group_ref' && $field['settings']['target_type'] == 'taxonomy_term') {
+      if ($field_value = field_get_items('node', $node, $field['field_name'])) {
+        $top_tid = $field_value[0]['target_id'];
+        $top_term[] = $top_tid;
+      }
     }
   }
-}
 
 $results = array();
 foreach ($top as $value) {
@@ -287,7 +274,7 @@ if(!empty($user)){
 }
 
 $options = array('absolute' => TRUE);
-  // For users who are subscribed to nodes
+// For users who are subscribed to nodes
 foreach ($results as $userid) {
   $user = user_load($userid);
   $name = $user->name;
@@ -302,7 +289,7 @@ foreach ($results as $userid) {
       $description = (array(
        'value' => $link,
        'format' => 'full_html',
-       ));
+      ));
       $node_title = $node_ref->title;
     }
     elseif(!empty($node_ref) && ($node_ref->type) == 'event'){
@@ -311,7 +298,7 @@ foreach ($results as $userid) {
       $description = (array(
        'value' => $link,
        'format' => 'full_html',
-       ));
+      ));
       $node_title = $node_ref->title;
     }
     elseif(!empty($node_ref) && ($node_ref->type) == 'institution'){
@@ -320,7 +307,7 @@ foreach ($results as $userid) {
       $description = (array(
        'value' => $link,
        'format' => 'full_html',
-       ));
+      ));
       $node_title = $node_ref->title;
     }
     elseif(!empty($node_ref) && ($node_ref->type) == 'meeting_space'){
@@ -329,7 +316,7 @@ foreach ($results as $userid) {
       $description = (array(
        'value' => $link,
        'format' => 'full_html',
-       ));
+      ));
       $node_title = $node_ref->title;
     }
     elseif(!empty($node_ref) && ($node_ref->type) == 'steering_committee'){
@@ -338,20 +325,17 @@ foreach ($results as $userid) {
       $description = (array(
        'value' => $link,
        'format' => 'full_html',
-       ));
+      ));
       $node_title = $node_ref->title;
     }
     $flag_node = flag_get_entity_flags('node', $nodeid, 'subscribe_node');
     if($flag_node && $type != 'news_item'){
       $message_body['value'] = t('<div style="margin:10px;">Hi @recipient</div>
-
         <div>We wanted to share that the following post on GOARN has been created by @user.You can see the post by clicking on the link below.</div>
-
         ', array('@user' => $username, '@recipient' => $name));
       $message_body['format'] = 'filtered';
       $message_body['value'] .= $link;
       $message_body['value'] .= t('
-
         <p>Thanks & Regards</p>
         <p>GOARN-Team</p>');
       $message = message_create('node_update', array('uid' => $user->uid));
@@ -364,7 +348,7 @@ foreach ($results as $userid) {
     }
   }
 }
-  // For users who are subscribed to terms
+// For users who are subscribed to terms
 foreach ($users as $userid) {
   $user = user_load($userid);
   $name = $user->name;
@@ -381,7 +365,7 @@ foreach ($users as $userid) {
       $description = (array(
        'value' => $link,
        'format' => 'full_html',
-       ));
+      ));
       $term_title = $term_ref->name;
     }
     elseif(!empty($term_ref) && $machine_name == 'ems_vocabulary_country'){
@@ -390,20 +374,17 @@ foreach ($users as $userid) {
       $description = (array(
        'value' => $link,
        'format' => 'full_html',
-       ));
+      ));
       $term_title = $term_ref->name;
     }
     $flag_term = flag_get_entity_flags('taxonomy_term', $nodeid, 'subscribe_term');
     if($flag_term && $type != 'news_item'){
       $message_body['value'] = t('<div style="margin:10px;">Hi @recipient</div>
-
         <div>We wanted to share that the following post on GOARN has been created by @user.You can see the post by clicking on the link below.</div>
-
         ', array('@user' => $username, '@recipient' => $name));
       $message_body['format'] = 'filtered';
       $message_body['value'] .= $link;
       $message_body['value'] .= t('
-
         <p>Thanks & Regards</p>
         <p>GOARN-Team</p>');
       $message = message_create('node_update', array('uid' => $user->uid));
@@ -421,8 +402,7 @@ foreach ($users as $userid) {
 /*
  * function to get referenced entities from the updated and inserted node.
  */
-function goarn_notify_get_referenced_nodes($node)
-{
+function goarn_notify_get_referenced_nodes($node){
   $top = array();
   $field_infos = field_info_instances('node', $node->type);
   foreach ($field_infos as $field_name => $value) {
@@ -431,14 +411,13 @@ function goarn_notify_get_referenced_nodes($node)
       if ($field_value = field_get_items('node', $node, $field['field_name'])) {
        $top_nid = $field_value[0]['target_id'];
        $top[] = $top_nid;
-     }
-   }
- }
+      }
+    }
+  }
  return $top;
 }
 
-function goarn_notify_get_referenced_terms($node)
-{
+function goarn_notify_get_referenced_terms($node){
   $top_term = array();
   $field_infos = field_info_instances('node', $node->type);
   foreach ($field_infos as $field_name => $value) {
@@ -447,17 +426,16 @@ function goarn_notify_get_referenced_terms($node)
       if ($field_value = field_get_items('node', $node, $field['field_name'])) {
        $top_tid = $field_value[0]['target_id'];
        $top_term[] = $top_tid;
-     }
-   }
- }
+      }
+    }
+  }
  return $top_term;
 }
 
 /*
  * function to get uid of user who subscribed the referenced nodes.
  */
-function goarn_notify_get_referenced_users_node($node)
-{
+function goarn_notify_get_referenced_users_node($node){
   $results = array();
   $result = array();
   $nodes = goarn_notify_get_referenced_nodes($node);
@@ -484,8 +462,7 @@ function goarn_notify_get_referenced_users_node($node)
 /*
  * function to get uid of user who subscribed the referenced terms.
  */
-function goarn_notify_get_referenced_users_term($node)
-{
+function goarn_notify_get_referenced_users_term($node){
   $users = array();
   $user = array();
   $terms = goarn_notify_get_referenced_terms($node);
@@ -512,8 +489,7 @@ function goarn_notify_get_referenced_users_term($node)
  * function to get uid of user who subscribed the nodes which are updated and inserted.
  */
 
-function goarn_notify_get_users_node($node)
-{
+function goarn_notify_get_users_node($node){
   $results = array();
   $result = array();
   $node = node_load($node->nid);
@@ -535,8 +511,7 @@ function goarn_notify_get_users_node($node)
  * function to get uid of user who subscribed the terms which are updated and inserted.
  */
 
-function goarn_notify_get_users_term($term)
-{
+function goarn_notify_get_users_term($term){
   $results = array();
   $result = array();
   $node = taxonomy_term_load($term->tid);
